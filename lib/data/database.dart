@@ -89,7 +89,7 @@ class DatabaseHelper {
         memo: q['memo'] as String?,
         image: q['image'] as String?,
         date: q['date'] as int?,
-        status: q['date'] as int?,
+        status: q['status'] as int?,
       ));
     }
 
@@ -109,7 +109,7 @@ class DatabaseHelper {
         memo: q['memo'] as String?,
         image: q['image'] as String?,
         date: q['date'] as int?,
-        status: q['date'] as int?,
+        status: q['status'] as int?,
       ));
     }
 

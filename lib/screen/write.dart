@@ -17,6 +17,10 @@ class _DiaryWritePageState extends State<DiaryWritePage> {
     'assets/img/b2.jpg',
     'assets/img/b3.jpg',
     'assets/img/b4.jpg',
+    'assets/img/b5.jpg',
+    'assets/img/b6.jpg',
+    'assets/img/b7.jpg',
+    'assets/img/b8.jpg',
   ];
   List<String> statusImg = [
     'assets/img/ico-weather.png',
@@ -43,6 +47,9 @@ class _DiaryWritePageState extends State<DiaryWritePage> {
         actions: [
           TextButton(
             onPressed: () async {
+              widget.diary!.title = nameController.text;
+              widget.diary!.memo = memoController.text;
+
               await dbHelper.insertDiary(widget.diary!);
               Navigator.pop(context);
             },
@@ -95,7 +102,7 @@ class _DiaryWritePageState extends State<DiaryWritePage> {
                     child: Container(
                       width: 70.0,
                       height: 70.0,
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(6.0),
                       child: Image.asset(
                         statusImg[_idx],
                         fit: BoxFit.contain,
