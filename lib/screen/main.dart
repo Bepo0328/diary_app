@@ -1,3 +1,6 @@
+import 'package:diary_app/data/diary.dart';
+import 'package:diary_app/data/utils.dart';
+import 'package:diary_app/screen/write.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -37,9 +40,23 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Container(child: getPage()),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-
+        onPressed: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+            return DiaryWritePage(
+              diary: Diary(
+                title: '',
+                memo: '',
+                image: 'assets/img/b1.jpg',
+                date: Utils.getFormatTime(DateTime.now()),
+                status: 0,
+              ),
+            );
+          }));
         },
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (idx) {
