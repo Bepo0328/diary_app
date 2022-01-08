@@ -369,12 +369,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 }),
               ),
             );
-          } else if (idx == 2) {
-            return Container();
-          } else if (idx == 3) {
-            return Container();
-          } else if (idx == 4) {
-            return Container();
           } else {
             return Container();
           }
