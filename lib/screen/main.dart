@@ -3,6 +3,7 @@ import 'package:diary_app/data/diary.dart';
 import 'package:diary_app/data/utils.dart';
 import 'package:diary_app/screen/write.dart';
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,11 +35,13 @@ class _MyHomePageState extends State<MyHomePage> {
   int selectIndex = 0;
   final dbHelper = DatabaseHelper.instance;
   Diary? todayDiary;
+  Diary? historyDiary;
   List<String> statusImg = [
     'assets/img/ico-weather.png',
     'assets/img/ico-weather_2.png',
     'assets/img/ico-weather_3.png',
   ];
+  DateTime _selectedDay = DateTime.now();
 
   void getTodayDiary() async {
     List<Diary> diary =
@@ -61,24 +64,45 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Container(child: getPage()),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Diary diary;
-          if (todayDiary != null) {
-            diary = todayDiary!;
+          if (selectIndex == 0) {
+            Diary diary;
+            if (todayDiary != null) {
+              diary = todayDiary!;
+            } else {
+              diary = Diary(
+                title: '',
+                memo: '',
+                image: 'assets/img/b1.jpg',
+                date: Utils.getFormatTime(DateTime.now()),
+                status: 0,
+              );
+            }
+            await Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+              return DiaryWritePage(
+                diary: diary,
+              );
+            }));
+            getTodayDiary();
           } else {
-            diary = Diary(
-              title: '',
-              memo: '',
-              image: 'assets/img/b1.jpg',
-              date: Utils.getFormatTime(DateTime.now()),
-              status: 0,
-            );
+            Diary diary;
+            if (historyDiary != null) {
+              diary = historyDiary!;
+            } else {
+              diary = Diary(
+                title: '',
+                memo: '',
+                image: 'assets/img/b1.jpg',
+                date: Utils.getFormatTime(_selectedDay),
+                status: 0,
+              );
+            }
+            await Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+              return DiaryWritePage(
+                diary: diary,
+              );
+            }));
+            getDiaryByDate(_selectedDay);
           }
-          await Navigator.push(context, MaterialPageRoute(builder: (ctx) {
-            return DiaryWritePage(
-              diary: diary,
-            );
-          }));
-          getTodayDiary();
         },
         backgroundColor: Colors.black,
         child: const Icon(
@@ -92,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
             selectIndex = idx;
           });
         },
+        currentIndex: selectIndex,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.today),
@@ -140,9 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   Container(
                     margin: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                        horizontal: 20.0
-                    ),
+                        vertical: 16.0, horizontal: 20.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -163,13 +186,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(
-                      vertical: 12.0,
-                      horizontal: 20.0
-                    ),
+                        vertical: 12.0, horizontal: 20.0),
                     padding: const EdgeInsets.symmetric(
-                        vertical: 12.0,
-                        horizontal: 20.0
-                    ),
+                        vertical: 12.0, horizontal: 20.0),
                     decoration: BoxDecoration(
                       color: Colors.white54,
                       borderRadius: BorderRadius.circular(16.0),
@@ -201,8 +220,103 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void getDiaryByDate(DateTime date) async {
+    List<Diary> _date =
+        await dbHelper.getDiaryByDate(Utils.getFormatTime(date));
+    setState(() {
+      if (_date.isEmpty) {
+        historyDiary = null;
+      } else {
+        historyDiary = _date.first;
+      }
+    });
+  }
+
   Widget getHistoryPage() {
-    return Container();
+    return Container(
+      child: ListView.builder(
+        itemBuilder: (ctx, idx) {
+          if (idx == 0) {
+            return Container(
+              child: TableCalendar(
+                focusedDay: DateTime.now(),
+                firstDay: DateTime.utc(2010, 10, 16),
+                lastDay: DateTime.utc(2030, 3, 14),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    getDiaryByDate(selectedDay);
+                  });
+                },
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+              ),
+            );
+          } else if (idx == 1) {
+            if (historyDiary == null) {
+              return Container();
+            } else {
+              return Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${_selectedDay.year}.${_selectedDay.month}.${_selectedDay.day}',
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Image.asset(
+                          statusImg[historyDiary!.status!],
+                          fit: BoxFit.contain,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 20.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12.0, horizontal: 20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white54,
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          historyDiary!.title!,
+                          style: const TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Container(height: 12.0),
+                        Text(
+                          historyDiary!.memo!,
+                          style: const TextStyle(fontSize: 18.0),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+          } else {
+            return Container();
+          }
+        },
+        itemCount: 2,
+      ),
+    );
   }
 
   Widget getChartPage() {
