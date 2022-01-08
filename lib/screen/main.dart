@@ -36,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final dbHelper = DatabaseHelper.instance;
   Diary? todayDiary;
   Diary? historyDiary;
+  List<Diary> allDiaries = [];
   List<String> statusImg = [
     'assets/img/ico-weather.png',
     'assets/img/ico-weather_2.png',
@@ -49,6 +50,12 @@ class _MyHomePageState extends State<MyHomePage> {
     if (diary.isNotEmpty) {
       todayDiary = diary.first;
     }
+    setState(() {});
+  }
+
+  void getAllDiary() async {
+    allDiaries =
+    await dbHelper.getAllDiary();
     setState(() {});
   }
 
@@ -115,9 +122,12 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             selectIndex = idx;
           });
+          if (selectIndex == 2) {
+            getAllDiary();
+          }
         },
-        currentIndex: selectIndex,
-        items: const [
+          currentIndex: selectIndex,
+          items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.today),
             label: '오늘',
@@ -320,6 +330,57 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget getChartPage() {
-    return Container();
+    return Container(
+      child: ListView.builder(
+        itemBuilder: (ctx, idx) {
+          if (idx == 0) {
+            return Container(
+              margin: const EdgeInsets.symmetric(
+                vertical: 20.0,
+                horizontal: 16.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(statusImg.length, (_idx) {
+                  return Container(
+                    child: Column(
+                      children: [
+                        Image.asset(statusImg[_idx], fit: BoxFit.contain),
+                        Text('${allDiaries.where((element) => element.status == _idx).length}개'),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            );
+          } else if (idx == 1) {
+            return Container(
+              height: 120.0,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                children: List.generate(allDiaries.length, (_idx) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                    height: 100.0,
+                    width: 100.0,
+                    child: Image.asset(allDiaries[_idx].image!, fit: BoxFit.cover),
+                  );
+                }),
+              ),
+            );
+          } else if (idx == 2) {
+            return Container();
+          } else if (idx == 3) {
+            return Container();
+          } else if (idx == 4) {
+            return Container();
+          } else {
+            return Container();
+          }
+        },
+        itemCount: 5,
+      ),
+    );
   }
 }
